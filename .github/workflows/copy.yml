@@ -19,7 +19,9 @@ on:
         description: '目标仓库及标签 (格式 repo:tag)'
         required: true
         default: ''
-
+      digest:
+        description: 'Docker 镜像的 digest'
+        required: true
 jobs:
   copy:
     runs-on: ubuntu-latest
@@ -32,3 +34,15 @@ jobs:
         destination: ${{ github.event.inputs.destination }}
         destination-credential: ${{ secrets.DESTINATION_CREDENTIAL }}
         copy: "${{ github.event.inputs.source_repo }} ${{ github.event.inputs.destination_repo }}"
+    - name: Update KV Status to Success
+      env:
+        CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+        DIGEST: ${{ github.event.inputs.digest }}
+      run: |
+        # 更新 KV 状态为 "success"
+        curl -X PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/${DIGEST}" \
+          -H "Authorization: Bearer ${CF_API_TOKEN}" \
+          -H "Content-Type: text/plain" \
+          --data '"success"'        
