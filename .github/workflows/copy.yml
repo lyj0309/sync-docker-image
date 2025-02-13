@@ -21,7 +21,7 @@ on:
         default: ''
       digest:
         description: 'Docker 镜像的 digest'
-        required: true
+        required: false
 jobs:
   copy:
     runs-on: ubuntu-latest
