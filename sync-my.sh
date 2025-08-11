@@ -9,10 +9,7 @@ TARGET_REGISTRY="registry.ap-southeast-1.aliyuncs.com"
 
 # 目标命名空间：
 #  - 为空：保持原始路径（如 supabase/studio -> registry/supabase/studio）
-#  - 不空且 KEEP_SOURCE_NS=1：加上原命名空间（registry/mirror/supabase/studio）
-#  - 不空且 KEEP_SOURCE_NS=0：仅用目标命名空间（registry/mirror/studio）
 TARGET_NAMESPACE="lyjp"
-KEEP_SOURCE_NS="1"
 
 # 每个仓库同步的 tag 数量
 NUM_TAGS="${NUM_TAGS:-10}"
@@ -110,11 +107,7 @@ target_repo_path() {
   if [[ -z "$TARGET_NAMESPACE" ]]; then
     echo "${src_ns}/${src_name}"
   else
-    if [[ "$KEEP_SOURCE_NS" -eq 1 ]]; then
-      echo "${TARGET_NAMESPACE}/${src_ns}/${src_name}"
-    else
-      echo "${TARGET_NAMESPACE}/${src_name}"
-    fi
+      echo "${TARGET_NAMESPACE}/${src_ns}-${src_name}"
   fi
 }
 
@@ -161,7 +154,7 @@ main() {
   require_tools
 
   echo "开始同步到：${TARGET_REGISTRY}"
-  echo "目标命名空间：${TARGET_NAMESPACE:-<保持原路径>}, KEEP_SOURCE_NS=${KEEP_SOURCE_NS}"
+  echo "目标命名空间：${TARGET_NAMESPACE:-<保持原路径>}"
   echo "每个仓库同步最新 ${NUM_TAGS} 个 tag"
   [[ -n "$EXCLUDE_TAGS_REGEX" ]] && echo "将排除匹配正则的 tag：${EXCLUDE_TAGS_REGEX}"
   [[ "$DRY_RUN" -eq 1 ]] && echo "DRY-RUN 模式，仅显示将执行的操作。"
@@ -186,10 +179,10 @@ main() {
       src_ref="docker.io/${repo}:${tag}"
       dst_ref="${TARGET_REGISTRY}/${local_target_path}:${tag}"
 
-      if exists_in_target "$local_target_path" "$tag"; then
-        echo "已存在，跳过：$dst_ref"
-        continue
-      fi
+    #   if exists_in_target "$local_target_path" "$tag"; then
+    #     echo "已存在，跳过：$dst_ref"
+    #     continue
+    #   fi
 
       echo "复制：$src_ref  ->  $dst_ref"
       if [[ "$USE_SKOPEO" -eq 1 ]]; then
