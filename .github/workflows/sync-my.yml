@@ -8,6 +8,20 @@ on:
 jobs:
   login:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 60
+      matrix:
+        repo:
+            - supabase/studio
+            - supabase/kong
+            - supabase/gotrue
+            - supabase/realtime
+            - supabase/storage-api
+            - supabase/imgproxy
+            - supabase/postgres-meta
+            - supabase/logflare
+            - supabase/vector  
     steps:
       - uses: actions/checkout@v4        
       -
@@ -18,8 +32,9 @@ jobs:
           username: 2457395722@qq.com
           password: ${{ secrets.DOCKER_PASS }}
 
-      - name: sync
-
+      - name: Run for ${{ matrix.repo }}
+        env:
+          REPO: ${{ matrix.repo }}
         run: |
             chmod +x sync-my.sh
             ./sync-my.sh

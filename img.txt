@@ -7,3 +7,4 @@ supabase/imgproxy
 supabase/postgres-meta
 supabase/logflare
 supabase/vector
+supabase/supavisor

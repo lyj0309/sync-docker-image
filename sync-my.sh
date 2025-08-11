@@ -22,22 +22,27 @@ USE_SKOPEO="0"
 DRY_RUN="${DRY_RUN:-0}"
 
 # （可选）排除某些 tag（正则），例如：'^latest$|^dev'
-EXCLUDE_TAGS_REGEX="${EXCLUDE_TAGS_REGEX:-}"
+EXCLUDE_TAGS_REGEX="${EXCLUDE_TAGS_REGEX:arm64|aarch64}"
 
 ############################################
 # 待同步的镜像列表
 ############################################
-REPOS=(
-  supabase/studio
-  supabase/kong
-  supabase/gotrue
-  supabase/realtime
-  supabase/storage-api
-  supabase/imgproxy
-  supabase/postgres-meta
-  supabase/logflare
-  supabase/vector
-)
+if [[ -n "${REPOS:-}" ]]; then
+  # 去掉空行/注释，并处理可能的 \r
+  readarray -t REPOS_ARR < <(printf '%s\n' "$REPOS" | sed 's/\r$//' | awk 'NF && $1!~/^#/')
+else
+  REPOS_ARR=(
+    supabase/studio
+    supabase/kong
+    supabase/gotrue
+    supabase/realtime
+    supabase/storage-api
+    supabase/imgproxy
+    supabase/postgres-meta
+    supabase/logflare
+    supabase/vector
+  )
+fi
 
 ############################################
 # 依赖检查
