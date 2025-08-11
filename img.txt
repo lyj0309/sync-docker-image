@@ -1,5 +1,5 @@
 supabase/studio
-supabase/kong
+kong
 supabase/gotrue
 supabase/realtime
 supabase/storage-api

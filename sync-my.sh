@@ -107,7 +107,11 @@ target_repo_path() {
   if [[ -z "$TARGET_NAMESPACE" ]]; then
     echo "${src_ns}/${src_name}"
   else
-      echo "${TARGET_NAMESPACE}/${src_ns}-${src_name}"
+        if [[ -z "$src_ns" ]]; then
+      echo "${TARGET_NAMESPACE}/${src_name}"
+        else
+            echo "${TARGET_NAMESPACE}/${src_ns}-${src_name}"
+        fi
   fi
 }
 
