@@ -20,4 +20,5 @@ jobs:
       - name: sync
 
         run: |
+            chmod +x sync-my.sh
             ./sync-my.sh
