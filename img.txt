@@ -1,0 +1,9 @@
+supabase/studio
+supabase/kong
+supabase/gotrue
+supabase/realtime
+supabase/storage-api
+supabase/imgproxy
+supabase/postgres-meta
+supabase/logflare
+supabase/vector
