@@ -14,7 +14,7 @@ jobs:
       matrix:
         repo:
             - supabase/studio
-            - supabase/kong
+            - kong
             - supabase/gotrue
             - supabase/realtime
             - supabase/storage-api
@@ -22,6 +22,10 @@ jobs:
             - supabase/postgres-meta
             - supabase/logflare
             - supabase/vector  
+            - supabase/supavisor
+            - supabase/postgres
+            - darthsim/imgproxy
+            - timberio/vector
     steps:
       - uses: actions/checkout@v4        
       -
