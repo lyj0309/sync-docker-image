@@ -22,8 +22,7 @@ USE_SKOPEO="0"
 DRY_RUN="${DRY_RUN:-0}"
 
 # （可选）排除某些 tag（正则），例如：'^latest$|^dev'
-EXCLUDE_TAGS_REGEX="${EXCLUDE_TAGS_REGEX:arm64|aarch64}"
-
+EXCLUDE_TAGS_REGEX="${EXCLUDE_TAGS_REGEX:-arm64|aarch64}"
 ############################################
 # 待同步的镜像列表
 ############################################
