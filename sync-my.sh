@@ -176,7 +176,7 @@ main() {
     fi
 
     local_target_path="$(target_repo_path "$repo")"
-
+    tags+=("latest")
     for tag in "${tags[@]}"; do
       # 可选过滤
       if [[ -n "$EXCLUDE_TAGS_REGEX" ]] && [[ "$tag" =~ $EXCLUDE_TAGS_REGEX ]]; then
