@@ -22,7 +22,7 @@ USE_SKOPEO="0"
 DRY_RUN="${DRY_RUN:-0}"
 
 # （可选）排除某些 tag（正则），例如：'^latest$|^dev'
-EXCLUDE_TAGS_REGEX="${EXCLUDE_TAGS_REGEX:-''}"
+EXCLUDE_TAGS_REGEX="${EXCLUDE_TAGS_REGEX:-arm64|aarch64}"
 ############################################
 # 待同步的镜像列表
 ############################################
@@ -167,7 +167,7 @@ main() {
   [[ -n "$EXCLUDE_TAGS_REGEX" ]] && echo "将排除匹配正则的 tag：${EXCLUDE_TAGS_REGEX}"
   [[ "$DRY_RUN" -eq 1 ]] && echo "DRY-RUN 模式，仅显示将执行的操作。"
 
-  for repo in "${REPOS[@]}"; do
+  for repo in "${REPOS_ARR[@]}"; do
     echo "==== 处理仓库：${repo} ===="
     mapfile -t tags < <(list_latest_tags "$repo" "$NUM_TAGS")
     if [[ "${#tags[@]}" -eq 0 ]]; then
