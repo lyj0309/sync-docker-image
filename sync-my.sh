@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
+# set -Eeuo pipefail
 
 ############################################
 # 可配置项（按需修改/用环境变量覆盖）
@@ -111,7 +111,7 @@ target_repo_path() {
   if [[ -z "$TARGET_NAMESPACE" ]]; then
     echo "${src_ns}/${src_name}"
   else
-        if [[ -z "$src_ns" ]]; then
+        if [[ "$src_ns" == "$src_name" ]]; then
       echo "${TARGET_NAMESPACE}/${src_name}"
         else
             echo "${TARGET_NAMESPACE}/${src_ns}-${src_name}"
@@ -184,7 +184,8 @@ main() {
         continue
       fi
 
-      src_ref="docker.io/${repo}:${tag}"
+      # src_ref="docker.io/${repo}:${tag}"
+      src_ref="${repo}:${tag}"
       dst_ref="${TARGET_REGISTRY}/${local_target_path}:${tag}"
 
     #   if exists_in_target "$local_target_path" "$tag"; then
