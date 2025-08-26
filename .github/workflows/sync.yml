@@ -3,32 +3,29 @@ run-name: Sync ${{ inputs.source_repo }} to ${{ inputs.destination_scope }}
 on: 
   workflow_dispatch:
     inputs:
-      source:
-        description: '镜像源 (Registry)'     
-        required: true
-        default: 'docker.io'
-      destination:
-        description: '目标源 (Registry)'
-        required: true
-        default: 'registry.cn-beijing.aliyuncs.com'
-      source_repo:
+      repo:
         description: '仓库 (格式 repo)'
         required: true
         default: ''
-      destination_scope:
-        description: '目标Scope (格式 scope)'
-        required: true
-        default: ''
+
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-    - name: Sync Docker Images
-      uses: ikrong/docker-sync-action@main
-      with:
-        source: ${{ github.event.inputs.source }}
-        source-credential: ${{ secrets.SOURCE_CREDENTIAL }}
-        destination: ${{ github.event.inputs.destination }}
-        destination-credential: ${{ secrets.DESTINATION_CREDENTIAL }}
-        sync: "${{ github.event.inputs.source_repo }} ${{ github.event.inputs.destination_scope }}"
+      - uses: actions/checkout@v4        
+      -
+        name: Login to GitLab
+        uses: docker/login-action@v3
+        with:
+          registry: registry.ap-southeast-1.aliyuncs.com
+          username: 2457395722@qq.com
+          password: ${{ secrets.DOCKER_PASS }}
+
+      - name: Run for ${{ github.event.inputs.repo }}
+        env:
+          REPO: ${{ github.event.inputs.repo }}
+        run: |
+            chmod +x sync-my.sh
+
+            ./sync-my.sh
