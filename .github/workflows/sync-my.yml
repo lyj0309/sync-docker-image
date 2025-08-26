@@ -26,6 +26,7 @@ jobs:
             - supabase/postgres
             - darthsim/imgproxy
             - timberio/vector
+            - node
     steps:
       - uses: actions/checkout@v4        
       -
@@ -41,4 +42,5 @@ jobs:
           REPO: ${{ matrix.repo }}
         run: |
             chmod +x sync-my.sh
+
             ./sync-my.sh
