@@ -167,42 +167,49 @@ main() {
   [[ -n "$EXCLUDE_TAGS_REGEX" ]] && echo "将排除匹配正则的 tag：${EXCLUDE_TAGS_REGEX}"
   [[ "$DRY_RUN" -eq 1 ]] && echo "DRY-RUN 模式，仅显示将执行的操作。"
 
-  for repo in "${REPOS_ARR[@]}"; do
-    echo "==== 处理仓库：${repo} ===="
+for repo in "${REPOS_ARR[@]}"; do
+  echo "==== 处理仓库：${repo} ===="
+
+  # 判断是否显式带 tag（只看最后一个 path 段，避免把 registry:port 误判为 tag）
+  last_component="${repo##*/}"
+  if [[ "$last_component" == *:* ]]; then
+    # 显式 tag：跳过 list_latest_tags，直接同步该 tag
+    ref_no_tag="${repo%:*}"          # 去掉末尾的 :tag
+    tags=( "${last_component##*:}" ) # 仅该 tag
+  else
+    # 未显式 tag：按原逻辑列出最近的 tags
     mapfile -t tags < <(list_latest_tags "$repo" "$NUM_TAGS")
     if [[ "${#tags[@]}" -eq 0 ]]; then
       echo "未获取到 tags，跳过：${repo}"
       continue
     fi
-
-    local_target_path="$(target_repo_path "$repo")"
     tags+=("latest")
-    for tag in "${tags[@]}"; do
-      # 可选过滤
-      if [[ -n "$EXCLUDE_TAGS_REGEX" ]] && [[ "$tag" =~ $EXCLUDE_TAGS_REGEX ]]; then
-        echo "跳过 tag（匹配排除规则）：$repo:$tag"
-        continue
-      fi
+    ref_no_tag="$repo"
+  fi
 
-      # src_ref="docker.io/${repo}:${tag}"
-      src_ref="${repo}:${tag}"
-      dst_ref="${TARGET_REGISTRY}/${local_target_path}:${tag}"
+  local_target_path="$(target_repo_path "$ref_no_tag")"
 
-    #   if exists_in_target "$local_target_path" "$tag"; then
-    #     echo "已存在，跳过：$dst_ref"
-    #     continue
-    #   fi
+  for tag in "${tags[@]}"; do
+    # 可选过滤
+    if [[ -n "$EXCLUDE_TAGS_REGEX" ]] && [[ "$tag" =~ $EXCLUDE_TAGS_REGEX ]]; then
+      echo "跳过 tag（匹配排除规则）：$ref_no_tag:$tag"
+      continue
+    fi
 
-      echo "复制：$src_ref  ->  $dst_ref"
-      if [[ "$USE_SKOPEO" -eq 1 ]]; then
-        copy_one_tag_skopeo "$src_ref" "$dst_ref"
-      else
-        copy_one_tag_docker "$src_ref" "$dst_ref"
-      fi
-    done
+    src_ref="${ref_no_tag}:${tag}"
+    dst_ref="${TARGET_REGISTRY}/${local_target_path}:${tag}"
+
+    echo "复制：$src_ref  ->  $dst_ref"
+    if [[ "$USE_SKOPEO" -eq 1 ]]; then
+      copy_one_tag_skopeo "$src_ref" "$dst_ref"
+    else
+      copy_one_tag_docker "$src_ref" "$dst_ref"
+    fi
   done
+done
 
-  echo "全部完成。"
+echo "全部完成。"
+
 }
 
 main "$@"
