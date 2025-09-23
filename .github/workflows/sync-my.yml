@@ -27,6 +27,7 @@ jobs:
             - darthsim/imgproxy
             - timberio/vector
             - node
+            - postgrest/postgrest
     steps:
       - uses: actions/checkout@v4        
       -
@@ -44,3 +45,4 @@ jobs:
             chmod +x sync-my.sh
 
             ./sync-my.sh
+
