@@ -28,6 +28,7 @@ jobs:
             - timberio/vector
             - node
             - postgrest/postgrest
+            - linuxserver/webtop
     steps:
       - uses: actions/checkout@v4        
       -
@@ -45,4 +46,5 @@ jobs:
             chmod +x sync-my.sh
 
             ./sync-my.sh
+
 
