@@ -2,9 +2,9 @@ name: ci
 
 on:
   workflow_dispatch:
-  schedule:
+  # schedule:
     # 每天 01:00 UTC 运行（= 新加坡时间 SGT 09:00）
-    - cron: '0 1 * * *'
+    # - cron: '0 1 * * *'
 jobs:
   login:
     runs-on: ubuntu-latest

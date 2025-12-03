@@ -1,0 +1,157 @@
+name: Sync Docker Images With regctl (matrix)
+
+on:
+  workflow_dispatch:
+  # 需要定时跑就打开
+  schedule:
+    - cron: "0 3 * * *"
+
+jobs:
+  # 1) 准备 matrix，从 images.txt 生成 JSON
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Build matrix from images.txt
+        id: build-matrix
+        run: |
+          set -euo pipefail
+
+          LIST_FILE="images.txt"
+          if [ ! -f "$LIST_FILE" ]; then
+            echo "images.txt not found"
+            exit 1
+          fi
+
+          # 读取非空、非注释行，转成 JSON 数组
+          # 结果形如：{"image":["library/nginx","library/redis","myorg/myapp"]}
+          MATRIX_JSON=$(grep -vE '^\s*(#|$)' "$LIST_FILE" \
+            | jq -R . \
+            | jq -s '{image: .}')
+
+          echo "matrix JSON: $MATRIX_JSON"
+
+          # 写给 GitHub Actions 输出
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+
+  # 2) 用 matrix 并发同步镜像
+  sync:
+    runs-on: ubuntu-latest
+    needs: prepare-matrix
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+
+    env:
+      SRC_REG: docker.io
+      DST_REG: registry.ap-southeast-1.aliyuncs.com
+      DST_NAMESPACE: lyjp
+      EXCLUDE_TAGS_REGEX: "arm64|aarch64|windows"
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install regctl
+        run: |
+          curl -LO https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64
+          chmod +x regctl-linux-amd64
+          sudo mv regctl-linux-amd64 /usr/local/bin/regctl
+          regctl version
+
+      - name: Login to registries
+        run: |
+          set -euo pipefail
+
+          echo "Login dest registry: $DST_REG"
+          regctl registry login "$DST_REG" \
+            --user "2457395722@qq.com" \
+            --pass "${{ secrets.DOCKER_PASS }}"
+
+      - name: Sync one image repo (latest + last 50 tags)
+        run: |
+          set -euo pipefail
+
+          REPO="${{ matrix.image }}"
+          echo "==============================="
+          echo "Sync repository: $REPO"
+          echo "==============================="
+
+          # 计算目标仓库路径（参考 sync-my.sh 的命名逻辑）
+          # 处理单段镜像名（如 nginx -> library/nginx）
+          if [[ "$REPO" != */* ]]; then
+            SRC_NS="library"
+            SRC_NAME="$REPO"
+          else
+            SRC_NS="${REPO%%/*}"
+            SRC_NAME="${REPO##*/}"
+          fi
+
+          if [ -z "${DST_NAMESPACE:-}" ]; then
+            # 未设置命名空间，保持原路径
+            DST_REPO="$REPO"
+          else
+            # 设置了命名空间
+            if [ "$SRC_NS" = "$SRC_NAME" ] || [ "$SRC_NS" = "library" ]; then
+              # 单段镜像名或 ns=name，目标为 DST_NAMESPACE/镜像名
+              DST_REPO="${DST_NAMESPACE}/${SRC_NAME}"
+            else
+              # 双段镜像名，目标为 DST_NAMESPACE/源ns-镜像名
+              DST_REPO="${DST_NAMESPACE}/${SRC_NS}-${SRC_NAME}"
+            fi
+          fi
+
+          # 处理单段镜像名的源路径
+          if [[ "$REPO" != */* ]]; then
+            SRC_PREFIX="${SRC_REG}/library/${REPO}"
+          else
+            SRC_PREFIX="${SRC_REG}/${REPO}"
+          fi
+          DST_PREFIX="${DST_REG}/${DST_REPO}"
+
+          echo "Source: $SRC_PREFIX"
+          echo "Destination: $DST_PREFIX"
+          echo "Exclude tags regex: ${EXCLUDE_TAGS_REGEX:-<none>}"
+
+          # 1) 先尝试同步 latest（如果有）
+          echo "Check latest tag for $SRC_PREFIX"
+          if regctl manifest get "${SRC_PREFIX}:latest" > /dev/null 2>&1; then
+            echo "  -> Sync latest"
+            regctl image copy "${SRC_PREFIX}:latest" "${DST_PREFIX}:latest"
+          else
+            echo "  -> No latest tag, skip"
+          fi
+
+          # 2) 获取最近 50 个 tag
+          echo "List tags for $SRC_PREFIX (limit 50)"
+          TAGS=$(regctl tag ls "${SRC_PREFIX}" --limit 50 || true)
+
+          if [ -z "$TAGS" ]; then
+            echo "  -> No tags found, done."
+            exit 0
+          fi
+
+          # 3) 逐个 tag 同步（跳过 latest，避免重复；排除匹配正则的 tag）
+          for TAG in $TAGS; do
+            if [ "$TAG" = "latest" ]; then
+              continue
+            fi
+
+            # 排除匹配正则的 tag
+            if [ -n "${EXCLUDE_TAGS_REGEX:-}" ]; then
+              if echo "$TAG" | grep -qE "$EXCLUDE_TAGS_REGEX"; then
+                echo "  -> Skip tag (excluded): ${TAG}"
+                continue
+              fi
+            fi
+
+            echo "  -> Sync tag: ${REPO}:${TAG} -> ${DST_REPO}:${TAG}"
+            regctl image copy \
+              "${SRC_PREFIX}:${TAG}" \
+              "${DST_PREFIX}:${TAG}"
+          done

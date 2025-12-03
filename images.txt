@@ -6,6 +6,12 @@ supabase/storage-api
 supabase/imgproxy
 supabase/postgres-meta
 supabase/logflare
-supabase/vector
+supabase/vector  
 supabase/supavisor
+supabase/postgres
+darthsim/imgproxy
+timberio/vector
 node
+caddy
+postgrest/postgrest
+linuxserver/webtop
