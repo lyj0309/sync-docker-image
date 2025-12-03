@@ -27,6 +27,7 @@ jobs:
             - darthsim/imgproxy
             - timberio/vector
             - node
+            - caddy
             - postgrest/postgrest
             - linuxserver/webtop
     steps:
@@ -46,5 +47,6 @@ jobs:
             chmod +x sync-my.sh
 
             ./sync-my.sh
+
 
 
