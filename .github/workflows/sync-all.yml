@@ -75,7 +75,7 @@ jobs:
           regctl registry login "$DST_REG" \
             --user "2457395722@qq.com" \
             --pass "${{ secrets.DOCKER_PASS }}"          
-          regctl registry login  registry-1.docker.io \
+          regctl registry login  docker.io \
             --user "lyj0309" \
             --pass "${{ secrets.DOCKERHUB_PASS }}"
 
