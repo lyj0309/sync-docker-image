@@ -52,7 +52,7 @@ jobs:
 
     env:
       SRC_REG: docker.io
-      DST_REG: registry.ap-southeast-1.aliyuncs.com
+      DST_REG: registry.cn-hongkong.aliyuncs.com
       DST_NAMESPACE: lyjp
       EXCLUDE_TAGS_REGEX: "arm64|aarch64|windows"
 
@@ -142,7 +142,7 @@ jobs:
             exit 0
           fi
 
-          # 3) 逐个 tag 同步（跳过 latest，避免重复；排除匹配正则的 tag）
+          # 3) 逐个 tag 同步（跳过 latest，避免重复；排除匹配正则的 tag；跳过已存在的 tag）
           for TAG in $TAGS; do
             if [ "$TAG" = "latest" ]; then
               continue
@@ -154,6 +154,12 @@ jobs:
                 echo "  -> Skip tag (excluded): ${TAG}"
                 continue
               fi
+            fi
+
+            # 检查目标是否已存在该 tag（不含 latest 的 tag 才跳过）
+            if regctl manifest head "${DST_PREFIX}:${TAG}" > /dev/null 2>&1; then
+              echo "  -> Skip tag (already exists): ${TAG}"
+              continue
             fi
 
             echo "  -> Sync tag: ${REPO}:${TAG} -> ${DST_REPO}:${TAG}"
