@@ -27,11 +27,14 @@ jobs:
             exit 1
           fi
 
-          # 读取非空、非注释行，转成 JSON 数组
+          # 读取非空、非注释行，去除 \r 和首尾空格，转成 JSON 数组
           # 结果形如：{"image":["library/nginx","library/redis","myorg/myapp"]}
           MATRIX_JSON=$(grep -vE '^\s*(#|$)' "$LIST_FILE" \
+            | tr -d '\r' \
+            | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' \
+            | grep -v '^$' \
             | jq -R . \
-            | jq -s '{image: .}')
+            | jq -sc '{image: .}')
 
           echo "matrix JSON: $MATRIX_JSON"
 
