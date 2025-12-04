@@ -1,3 +1,4 @@
+caddy
 supabase/studio
 kong
 supabase/gotrue
@@ -12,6 +13,5 @@ supabase/postgres
 darthsim/imgproxy
 timberio/vector
 node
-caddy
 postgrest/postgrest
 linuxserver/webtop
