@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   # 需要定时跑就打开
   schedule:
-    - cron: "0 3 * * *"
+    - cron: "0 3,15 * * *"
 
 jobs:
   # 1) 准备 matrix，从 images.txt 生成 JSON
