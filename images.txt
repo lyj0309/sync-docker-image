@@ -1,4 +1,5 @@
 caddy
+linuxserver/chrome
 supabase/studio
 kong
 supabase/gotrue
@@ -15,3 +16,4 @@ timberio/vector
 node
 postgrest/postgrest
 linuxserver/webtop
+
