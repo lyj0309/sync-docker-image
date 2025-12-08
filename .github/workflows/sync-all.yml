@@ -136,7 +136,7 @@ jobs:
 
           # 2) 获取最近 50 个 tag
           echo "List tags for $SRC_PREFIX (limit 50)"
-          TAGS=$(regctl tag ls "${SRC_PREFIX}" --limit 50 || true)
+          TAGS=$(regctl tag ls "${SRC_PREFIX}" --limit 25 || true)
 
           if [ -z "$TAGS" ]; then
             echo "  -> No tags found, done."
