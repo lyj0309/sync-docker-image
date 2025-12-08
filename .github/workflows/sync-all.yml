@@ -53,7 +53,8 @@ jobs:
 
     env:
       SRC_REG: docker.io
-      DST_REG: registry.cn-hongkong.aliyuncs.com
+      DST_REG: hkccr.ccs.tencentyun.com
+      # DST_REG: registry.cn-hongkong.aliyuncs.com    
       DST_NAMESPACE: lyjp
       EXCLUDE_TAGS_REGEX: "arm64|aarch64|windows"
 
@@ -74,7 +75,7 @@ jobs:
 
           echo "Login dest registry: $DST_REG"
           regctl registry login "$DST_REG" \
-            --user "2457395722@qq.com" \
+            --user "100005445758" \
             --pass "${{ secrets.DOCKER_PASS }}"          
           regctl registry login  docker.io \
             --user "lyj0309" \
