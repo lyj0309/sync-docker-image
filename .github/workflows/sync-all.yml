@@ -130,7 +130,9 @@ jobs:
           echo "Check latest tag for $SRC_PREFIX"
           if regctl manifest get "${SRC_PREFIX}:latest" > /dev/null 2>&1; then
             echo "  -> Sync latest"
-            regctl image copy --platform linux/amd64 "${SRC_PREFIX}:latest" "${DST_PREFIX}:latest"
+            if ! regctl image copy --platform linux/amd64 "${SRC_PREFIX}:latest" "${DST_PREFIX}:latest"; then
+              echo "  -> ERROR: Failed to sync latest tag, skipping"
+            fi
           else
             echo "  -> No latest tag, skip"
           fi
@@ -165,7 +167,9 @@ jobs:
             fi
 
             echo "  -> Sync tag: ${REPO}:${TAG} -> ${DST_REPO}:${TAG}"
-            regctl image copy --platform linux/amd64 \
+            if ! regctl image copy --platform linux/amd64 \
               "${SRC_PREFIX}:${TAG}" \
-              "${DST_PREFIX}:${TAG}"
+              "${DST_PREFIX}:${TAG}"; then
+              echo "  -> ERROR: Failed to sync tag ${TAG}, skipping"
+            fi
           done
