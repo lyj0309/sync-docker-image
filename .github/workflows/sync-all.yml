@@ -113,13 +113,12 @@ jobs:
               DST_REPO="${DST_NAMESPACE}/${SRC_NS}-${SRC_NAME}"
             fi
           fi
-
-          # 处理单段镜像名的源路径
           if [[ "$REPO" != */* ]]; then
-            SRC_PREFIX="${SRC_REG}/library/${REPO}"
-          else
-            SRC_PREFIX="${SRC_REG}/${REPO}"
+            REPO="${SRC_REG}/library/${REPO}"
           fi
+
+          SRC_PREFIX="${SRC_REG}/${REPO}"
+
           DST_PREFIX="${DST_REG}/${DST_REPO}"
 
           echo "Source: $SRC_PREFIX"
@@ -139,7 +138,7 @@ jobs:
 
           # 2) 获取最近 50 个 tag
           echo "List tags for $SRC_PREFIX (limit 50)"
-          TAGS=$(curl -s "https://hub.docker.com/v2/repositories/linuxserver/chromium/tags/?page_size=50&page=1&ordering=last_updated" | jq -r '.results[].name')
+          TAGS=$(curl -s "https://hub.docker.com/v2/repositories/${REPO}/tags/?page_size=50&page=1&ordering=last_updated" | jq -r '.results[].name')
 
           if [ -z "$TAGS" ]; then
             echo "  -> No tags found, done."
