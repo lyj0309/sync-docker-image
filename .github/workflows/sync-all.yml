@@ -114,7 +114,7 @@ jobs:
             fi
           fi
           if [[ "$REPO" != */* ]]; then
-            REPO="${SRC_REG}/library/${REPO}"
+            REPO="library/${REPO}"
           fi
 
           SRC_PREFIX="${SRC_REG}/${REPO}"
