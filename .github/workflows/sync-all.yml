@@ -139,7 +139,7 @@ jobs:
 
           # 2) 获取最近 50 个 tag
           echo "List tags for $SRC_PREFIX (limit 50)"
-          TAGS=$(regctl tag ls "$SRC_PREFIX" | xargs -I{} sh -c 'echo "$(regctl manifest get "$SRC_PREFIX":{} --format "{{.Config.Created}}" 2>/dev/null) {}"' | sort -r | head -n 50 | awk '{print $2}')
+          TAGS=$(curl -s "https://hub.docker.com/v2/repositories/linuxserver/chromium/tags/?page_size=50&page=1&ordering=last_updated" | jq -r '.results[].name')
 
           if [ -z "$TAGS" ]; then
             echo "  -> No tags found, done."
