@@ -160,10 +160,10 @@ jobs:
             fi
 
             # 检查目标是否已存在该 tag（不含 latest 的 tag 才跳过）
-            # if regctl manifest head "${DST_PREFIX}:${TAG}" > /dev/null 2>&1; then
-            #   echo "  -> Skip tag (already exists): ${TAG}"
-            #   continue
-            # fi
+            if regctl manifest head "${DST_PREFIX}:${TAG}" > /dev/null 2>&1; then
+              echo "  -> Skip tag (already exists): ${TAG}"
+              continue
+            fi
 
             echo "  -> Sync tag: ${REPO}:${TAG} -> ${DST_REPO}:${TAG}"
             if ! regctl image copy --platform linux/amd64 \
